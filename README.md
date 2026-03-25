@@ -12,7 +12,7 @@ sudo apt install dante-server
 sudo useradd -M -s /usr/sbin/nologin pruser
 ```
 
-Задаем пароль пользоватея
+Задаем пароль пользователя
 ```
 sudo passwd pruser
 ```
@@ -22,7 +22,7 @@ sudo passwd pruser
 sudo nano /etc/danted.conf
 ```
 
-Вставляем это в конфиг (если надо, меняем конфиг)
+Вставляем это в конфиг (если надо, меняем порт)
 
 ```
 logoutput: syslog
@@ -45,11 +45,6 @@ socks pass {
     log: error connect disconnect
     socksmethod: username
 }
-
-
-
-
-
 ```
 
 Рестартуем и делаем доступным после перезагрузки
