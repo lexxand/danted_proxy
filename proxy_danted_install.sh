@@ -79,6 +79,11 @@ validate_username() {
     [[ "${username}" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]
 }
 
+validate_urlsafe_secret() {
+    local secret="$1"
+    [[ "${secret}" =~ ^[A-Za-z0-9._~-]+$ ]]
+}
+
 is_protected_username() {
     local username="$1"
     local login_user
@@ -526,6 +531,8 @@ collect_answers() {
                 echo "Пароль не может быть пустым."
             elif [[ "${custom_pass}" != "${pass_confirm}" ]]; then
                 echo "Пароли не совпадают."
+            elif ! validate_urlsafe_secret "${custom_pass}"; then
+                echo "Для готовой строки CLIProxyAPI используйте пароль только из символов: A-Z a-z 0-9 . _ ~ -"
             else
                 PROXY_PASS="${custom_pass}"
                 break
@@ -540,22 +547,32 @@ print_summary_once() {
 
     cat <<EOF
 
-Готово. Данные доступа показаны один раз:
+============================================================
+Dante SOCKS5 настроен
+============================================================
 
-  SOCKS5 host: ${PUBLIC_IP}
-  SOCKS5 port: ${PROXY_PORT}
-  Username:    ${PROXY_USER}
-  Password:    ${PROXY_PASS}
+Данные доступа:
 
-Проверка без DNS-утечки на стороне клиента:
+  Host:     ${PUBLIC_IP}
+  Port:     ${PROXY_PORT}
+  Username: ${PROXY_USER}
+  Password: ${PROXY_PASS}
+
+Строка для CLIProxyAPI:
+
+  proxy-url: "socks5h://${PROXY_USER}:${PROXY_PASS}@${PUBLIC_IP}:${PROXY_PORT}"
+
+Проверка с remote DNS на стороне SOCKS5:
 
   curl --socks5-hostname 'USERNAME:PASSWORD@${PUBLIC_IP}:${PROXY_PORT}' https://api.ipify.org
 
 Важно:
+
   - используйте именно socks5h / --socks5-hostname / "Proxy DNS when using SOCKS v5";
   - обычный socks5 может резолвить домены локально и утекать DNS;
   - сервер не может заставить клиент не делать локальный DNS-запрос до подключения к SOCKS;
   - абсолютной "1000% анонимности" не бывает: не используйте личные аккаунты, WebRTC/QUIC без контроля и уникальные браузерные отпечатки.
+============================================================
 EOF
 
     if [[ "${UFW_CHANGED}" == "yes" ]]; then
